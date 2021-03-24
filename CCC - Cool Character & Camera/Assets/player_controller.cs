@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
-public class Boxer : MonoBehaviour
+public class player_controller : MonoBehaviour
 {
     // Start is called before the first frame update
 
@@ -24,7 +24,7 @@ public class Boxer : MonoBehaviour
     float moveSpeed = 1.5f;
 
     [SerializeField]
-    float jump_force = 5;
+    float jump_force = 50f;
 
     float jump = 0;
     Vector2 movement;
@@ -40,11 +40,13 @@ public class Boxer : MonoBehaviour
     public float maximumWalkVelocity = 1f;
     public float maximumRunVelocity = 2f;
     
-    [Range(0.1f,0.7f)]
-    public float speed = 0.5f;
+    [Range(1,5)]
+    public float speed = 1;
 
     // camera shake
     CinemachineImpulseSource cineImpulse;
+
+    Rigidbody rb;
 
     PLAYERSTATE states = PLAYERSTATE.IDLE;
     void Start()
@@ -54,7 +56,8 @@ public class Boxer : MonoBehaviour
         animator = GetComponent<Animator>();
         cineImpulse = GetComponent<CinemachineImpulseSource>();
 
-
+        rb = GetComponent<Rigidbody>();
+        rb.useGravity = true;
 
     }
     //handles acceleration & deceleration of velocity
@@ -64,23 +67,19 @@ public class Boxer : MonoBehaviour
         if (forwardPressed && velocityZ < currentMaxVelocity)
         {
             velocityZ += Time.deltaTime * acceleration;
-       //     transform.position += Vector3.forward  * velocityZ*speed;
         }
         if (leftPressed && velocityX > -currentMaxVelocity)
         {
             velocityX -= Time.deltaTime * acceleration;
-           // transform.position += Vector3.left   * velocityX * speed;
         }
         if (rightPressed && velocityX < currentMaxVelocity)
         {
             velocityX += Time.deltaTime * acceleration;
-         //   transform.position += Vector3.right  * velocityX * speed;
 
         }
         if (backPressed && velocityZ > -currentMaxVelocity)
         {
             velocityZ -= Time.deltaTime * acceleration;
-           // transform.position += Vector3.back  * velocityZ * speed;
 
         }
 
@@ -88,7 +87,6 @@ public class Boxer : MonoBehaviour
         if (!forwardPressed && velocityZ > 0.0f)
         {
             velocityZ -= Time.deltaTime * deceleration;
-          //  transform.position += Vector3.forward  * velocityZ * speed;
 
         }
 
@@ -96,13 +94,11 @@ public class Boxer : MonoBehaviour
         if (!backPressed && velocityZ < 0.0f)
         {
             velocityZ += Time.deltaTime * deceleration;
-         //   transform.position += Vector3.back  * velocityZ * speed;
 
         }
         if (!leftPressed && velocityX < 0.0f)
         {
             velocityX += Time.deltaTime * deceleration;
-          //  transform.position += Vector3.left * velocityZ * speed;
 
         }
 
@@ -110,7 +106,6 @@ public class Boxer : MonoBehaviour
         if (!rightPressed && velocityX > 0.0f)
         {
             velocityX -= Time.deltaTime * deceleration;
-            //transform.position += Vector3.right * velocityZ * speed;
 
         }
     }
@@ -131,6 +126,7 @@ public class Boxer : MonoBehaviour
         if (forwardPressed && runPressed && velocityZ > currentMaxVelocity)
         {
             velocityZ = currentMaxVelocity;
+
         }
         else if (forwardPressed && velocityZ > currentMaxVelocity)
         {
@@ -139,16 +135,19 @@ public class Boxer : MonoBehaviour
             {
                 velocityZ = currentMaxVelocity;
             }
+
         }
         else if (forwardPressed && velocityZ < currentMaxVelocity && velocityZ > (currentMaxVelocity - 0.05f))
         {
             velocityZ = currentMaxVelocity;
+
         }
 
         //locking left
         if (leftPressed && runPressed & velocityX < -currentMaxVelocity)
         {
             velocityX = -currentMaxVelocity;
+
         }
         else if (leftPressed && velocityX < -currentMaxVelocity)
         {
@@ -157,16 +156,19 @@ public class Boxer : MonoBehaviour
             {
                 velocityX = -currentMaxVelocity;
             }
+
         }
         else if (leftPressed && velocityX > -currentMaxVelocity && velocityX < (-currentMaxVelocity + 0.05f))
         {
             velocityX = -currentMaxVelocity;
+
         }
 
         //locking right
         if (rightPressed && runPressed & velocityX > currentMaxVelocity)
         {
             velocityX = currentMaxVelocity;
+
         }
         else if (rightPressed && velocityX > currentMaxVelocity)
         {
@@ -175,10 +177,12 @@ public class Boxer : MonoBehaviour
             {
                 velocityX = currentMaxVelocity;
             }
+
         }
         else if (rightPressed && velocityX < currentMaxVelocity && velocityX > (currentMaxVelocity + 0.05f))
         {
             velocityX = -currentMaxVelocity;
+
         }
     }
     // Update is called once per frame
@@ -197,7 +201,33 @@ public class Boxer : MonoBehaviour
 
         animator.SetFloat("Velocity Z", velocityZ);
         animator.SetFloat("Velocity X", velocityX);
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            animator.SetTrigger("Jump");
+            //rb.velocity += Vector3.up * jump_force;
+            rb.AddExplosionForce(jump_force, transform.position, 1);
+        }
+        if(runPressed)
+        {
+            transform.position += new Vector3(0.0f, 0.0f, Time.deltaTime * speed*2);
 
+        }
+        else if (forwardPressed)
+        {
+            transform.position += new Vector3(0.0f, 0.0f, Time.deltaTime * speed);
+        }
+        else if(backPressed)
+        {
+            transform.position += new Vector3(0.0f, 0.0f, Time.deltaTime * -speed);
+        }
+        if (leftPressed)
+        {
+            transform.position += new Vector3(Time.deltaTime * -speed, 0.0f,0.0f);
+        }
+        else if(rightPressed)
+        {
+            transform.position += new Vector3(Time.deltaTime * speed, 0.0f, 0.0f);
+        }
         //transform.LookAt(targetLook.transform);
         //horizontalMove = Input.GetAxis("Horizontal");
         //verticalMove = Input.GetAxis("Vertical");
