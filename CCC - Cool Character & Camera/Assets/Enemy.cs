@@ -14,8 +14,8 @@ public class Enemy : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        transform.LookAt(target.transform);
-    }
+    //void Update()
+    //{
+    //    transform.LookAt(target.transform);
+    //}
 }

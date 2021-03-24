@@ -7,6 +7,14 @@ public class Boxer : MonoBehaviour
 {
     // Start is called before the first frame update
 
+    enum PLAYERSTATE
+    {
+        IDLE,
+        FWD,
+        LEFT,
+        RIGHT,
+        BACK
+    }
     [SerializeField]
     GameObject targetLook;
 
@@ -27,6 +35,7 @@ public class Boxer : MonoBehaviour
     // camera shake
     CinemachineImpulseSource cineImpulse;
 
+    PLAYERSTATE states = PLAYERSTATE.IDLE;
     void Start()
     {
         movement = new Vector2();
@@ -44,63 +53,83 @@ public class Boxer : MonoBehaviour
 
         // Movement
         if (Input.GetKey(KeyCode.W))
-            movement.y = 1f;
-
-        if (Input.GetKey(KeyCode.S))
+        {
+            movement.y = 2f;
+            states = PLAYERSTATE.FWD;
+            SetAllParametersByDefault("Forward");
+        }
+        else if (Input.GetKey(KeyCode.S))
+        {
             movement.y = -1f;
-
-        if (Input.GetKey(KeyCode.D))
+            states = PLAYERSTATE.BACK;
+        }
+        else if (Input.GetKey(KeyCode.D))
+        {
             movement.x = 1f;
+            states = PLAYERSTATE.RIGHT;
+            SetAllParametersByDefault("Right");
 
-        if (Input.GetKey(KeyCode.A))
+        }
+        else if (Input.GetKey(KeyCode.A))
+        {
             movement.x = -1f;
+            states = PLAYERSTATE.LEFT;
+            SetAllParametersByDefault("Left");
 
-        // Punch
-        punch = false;
-        anim.SetBool("punch", false);
-
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            if(anim.GetBool("idle"))
-            {
-                punch = true;
-                anim.SetBool("idle", false);
-                anim.SetBool("punch", true);
-                cineImpulse.GenerateImpulse(Camera.main.transform.forward);
-            }
-     
         }
-
-        // Dodge
-
-        dodgeL = false;
-        anim.SetBool("dodge left", false);
-
-        dodgeR = false;
-        anim.SetBool("dodge right", false);
-
-
-        if (Input.GetKeyDown(KeyCode.Q))
+        else
         {
-            if (anim.GetBool("idle"))
-            {
-                punch = true;
-                anim.SetBool("idle", false);
-                anim.SetBool("dodge left", true);
-            }
+            states = PLAYERSTATE.IDLE;
+            SetAllParametersByDefault("idle");
 
         }
 
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            if (anim.GetBool("idle"))
-            {
-                punch = true;
-                anim.SetBool("idle", false);
-                anim.SetBool("dodge right", true);
-            }
+        //// Punch
+        //punch = false;
+        //anim.SetBool("punch", false);
 
-        }
+        //if (Input.GetKeyDown(KeyCode.Mouse0))
+        //{
+        //    if(anim.GetBool("idle"))
+        //    {
+        //        punch = true;
+        //        anim.SetBool("idle", false);
+        //        anim.SetBool("punch", true);
+        //        cineImpulse.GenerateImpulse(Camera.main.transform.forward);
+        //    }
+
+        //}
+
+        //// Dodge
+
+        //dodgeL = false;
+        //anim.SetBool("dodge left", false);
+
+        //dodgeR = false;
+        //anim.SetBool("dodge right", false);
+
+
+        //if (Input.GetKeyDown(KeyCode.Q))
+        //{
+        //    if (anim.GetBool("idle"))
+        //    {
+        //        punch = true;
+        //        anim.SetBool("idle", false);
+        //        anim.SetBool("dodge left", true);
+        //    }
+
+        //}
+
+        //if (Input.GetKeyDown(KeyCode.E))
+        //{
+        //    if (anim.GetBool("idle"))
+        //    {
+        //        punch = true;
+        //        anim.SetBool("idle", false);
+        //        anim.SetBool("dodge right", true);
+        //    }
+
+        //}
 
         // Resolve Movement
         Vector3 delta_fwd = transform.forward * movement.y * Time.deltaTime * moveSpeed;
@@ -109,15 +138,45 @@ public class Boxer : MonoBehaviour
         Vector3 delta_side = transform.right * movement.x * Time.deltaTime * moveSpeed;
         cc.Move(delta_side);
 
-        if (movement.magnitude > 0f)
-            anim.SetBool("idle", false);
-        else
-            anim.SetBool("idle", true);
+        switch(states)
+        {
+            case PLAYERSTATE.IDLE:
+                anim.SetBool("idle", true);
+                break;
+            case PLAYERSTATE.FWD:
+                anim.SetBool("Forward", true);
+                break;
+            case PLAYERSTATE.LEFT:
+                anim.SetBool("Left", true);
+                break;
+            case PLAYERSTATE.RIGHT:
+                anim.SetBool("Right", true);
+                break;
+                //default:
+                //    anim.SetBool("idle", true);
+                //    break;
+        }
+        //if (movement.magnitude > 0f)
+        //    anim.SetBool("idle", false);
+        //else
+        //    anim.SetBool("idle", true);
 
 
         movement = Vector2.zero;
     }
+    
 
-
+    void SetAllParametersByDefault(string saveone)
+    {
+        AnimatorControllerParameter[] parameters_list = anim.parameters;
+        for(int i =0; i < anim.parameterCount; i++)
+        {
+            if(parameters_list[i].type == AnimatorControllerParameterType.Bool && parameters_list[i].name != saveone)
+            {
+                anim.SetBool(parameters_list[i].name, false);
+            }
+            
+        }
+    }
 
 }
